@@ -32,33 +32,44 @@ def get_usage_summary() -> dict:
     with get_connection() as conn:
         rows = conn.execute(
             """
-            SELECT model,
-                   SUM(input_tokens)            AS input_tokens,
-                   SUM(output_tokens)           AS output_tokens,
-                   SUM(thinking_tokens)         AS thinking_tokens,
-                   SUM(cache_creation_tokens)   AS cache_creation_tokens,
-                   SUM(cache_read_tokens)       AS cache_read_tokens
-            FROM usage_events
-            GROUP BY model
+            SELECT p.model,
+                   p.input_price_per_million,
+                   p.output_price_per_million,
+                   p.cache_creation_price_per_million,
+                   p.cache_read_price_per_million,
+                   COALESCE(SUM(e.input_tokens), 0)          AS input_tokens,
+                   COALESCE(SUM(e.output_tokens), 0)         AS output_tokens,
+                   COALESCE(SUM(e.thinking_tokens), 0)       AS thinking_tokens,
+                   COALESCE(SUM(e.cache_creation_tokens), 0) AS cache_creation_tokens,
+                   COALESCE(SUM(e.cache_read_tokens), 0)     AS cache_read_tokens
+            FROM model_pricing p
+            LEFT JOIN usage_events e ON e.model = p.model
+            GROUP BY p.model
+            ORDER BY p.model
             """
         ).fetchall()
-        pricing_rows = conn.execute("SELECT * FROM model_pricing").fetchall()
 
-    pricing = {r["model"]: dict(r) for r in pricing_rows}
     models = []
     totals = {k: 0 for k in ("input_tokens", "output_tokens", "thinking_tokens",
                               "cache_creation_tokens", "cache_read_tokens")}
     totals["estimated_cost"] = 0.0
 
     for row in rows:
-        p = pricing.get(row["model"], {})
         cost = (
-            row["input_tokens"]          * (p.get("input_price_per_million", 0) / 1_000_000)
-            + row["output_tokens"]       * (p.get("output_price_per_million", 0) / 1_000_000)
-            + row["cache_creation_tokens"] * (p.get("cache_creation_price_per_million", 0) / 1_000_000)
-            + row["cache_read_tokens"]   * (p.get("cache_read_price_per_million", 0) / 1_000_000)
+            row["input_tokens"]            * (row["input_price_per_million"] / 1_000_000)
+            + row["output_tokens"]         * (row["output_price_per_million"] / 1_000_000)
+            + row["cache_creation_tokens"] * (row["cache_creation_price_per_million"] / 1_000_000)
+            + row["cache_read_tokens"]     * (row["cache_read_price_per_million"] / 1_000_000)
         )
-        entry = {**dict(row), "estimated_cost": round(cost, 6)}
+        entry = {
+            "model":                  row["model"],
+            "input_tokens":           row["input_tokens"],
+            "output_tokens":          row["output_tokens"],
+            "thinking_tokens":        row["thinking_tokens"],
+            "cache_creation_tokens":  row["cache_creation_tokens"],
+            "cache_read_tokens":      row["cache_read_tokens"],
+            "estimated_cost":         round(cost, 6),
+        }
         models.append(entry)
         for k in ("input_tokens", "output_tokens", "thinking_tokens",
                   "cache_creation_tokens", "cache_read_tokens"):
