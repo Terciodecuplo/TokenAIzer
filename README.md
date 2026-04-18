@@ -2,7 +2,7 @@
 
 > Local token usage tracker for Anthropic LLM models.
 
-TokenAIzer is a personal dashboard that monitors token consumption across Anthropic models — input, output, thinking, and cache — with estimated cost in USD and EUR. It runs entirely on your machine, with no external dependencies beyond the Anthropic API itself.
+TokenAIzer is a personal dashboard that monitors token consumption across Anthropic models (input, output, thinking, and cache) with estimated cost in USD and EUR. It runs entirely on your machine, with no external dependencies beyond the Anthropic API itself.
 
 ---
 
@@ -14,7 +14,7 @@ TokenAIzer is a personal dashboard that monitors token consumption across Anthro
 - Time-series chart with animated transitions
 - Proxy lifecycle control (start / stop) from the dashboard
 - Manual entry for sessions that bypass the proxy
-- SQLite storage — no database server required
+- SQLite storage, no database server required
 
 ## Supported Models
 

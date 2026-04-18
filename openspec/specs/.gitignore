@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Svelte
+node_modules/
+.svelte-kit/
+.env
+.env.local
+.env.*
+dist/
+build/
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# IDEs
+.vscode/settings.json
+.idea/
+
+# Logs
+*.log
+logs/
+
+# OS
+Thumbs.db

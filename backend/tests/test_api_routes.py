@@ -141,6 +141,43 @@ def test_pricing_returns_all_seeded_models(client):
 
 
 # ---------------------------------------------------------------------------
+# Exchange rate
+# ---------------------------------------------------------------------------
+
+def test_exchange_rate_returns_eur_on_success(client, monkeypatch):
+    import api.exchange_rate as _er_mod
+    import urllib.request
+    import io
+
+    class _FakeResp:
+        def __init__(self):
+            self._data = b'{"rates": {"EUR": 0.92}}'
+        def read(self):
+            return self._data
+        def __enter__(self):
+            return self
+        def __exit__(self, *_):
+            pass
+
+    monkeypatch.setattr(_er_mod.urllib.request, "urlopen", lambda *a, **kw: _FakeResp())
+    r = client.get("/api/exchange-rate")
+    assert r.status_code == 200
+    assert r.json() == {"eur": 0.92}
+
+
+def test_exchange_rate_returns_null_on_error(client, monkeypatch):
+    import api.exchange_rate as _er_mod
+
+    def _fail(*a, **kw):
+        raise OSError("network down")
+
+    monkeypatch.setattr(_er_mod.urllib.request, "urlopen", _fail)
+    r = client.get("/api/exchange-rate")
+    assert r.status_code == 200
+    assert r.json() == {"eur": None}
+
+
+# ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.exchange_rate import router as exchange_rate_router
 from api.pricing import router as pricing_router
 from api.proxy import router as proxy_router
 from api.usage import router as usage_router
@@ -17,6 +18,7 @@ app.add_middleware(
 
 init_db()
 
+app.include_router(exchange_rate_router)
 app.include_router(proxy_router)
 app.include_router(usage_router)
 app.include_router(pricing_router)
@@ -24,4 +26,4 @@ app.include_router(pricing_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8002, reload=True)
