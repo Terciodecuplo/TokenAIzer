@@ -1,12 +1,10 @@
 from fastapi import APIRouter
 
-from db.database import get_connection
+from db.pricing import get_all_pricing
 
 router = APIRouter(prefix="/api", tags=["pricing"])
 
 
 @router.get("/pricing")
 def get_pricing() -> list:
-    with get_connection() as conn:
-        rows = conn.execute("SELECT * FROM model_pricing").fetchall()
-    return [dict(r) for r in rows]
+    return get_all_pricing()

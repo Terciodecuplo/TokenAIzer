@@ -44,7 +44,7 @@ def get_usage_summary() -> dict:
         ).fetchall()
         pricing_rows = conn.execute("SELECT * FROM model_pricing").fetchall()
 
-    pricing = {r["model"]: r for r in pricing_rows}
+    pricing = {r["model"]: dict(r) for r in pricing_rows}
     models = []
     totals = {k: 0 for k in ("input_tokens", "output_tokens", "thinking_tokens",
                               "cache_creation_tokens", "cache_read_tokens")}
@@ -73,6 +73,7 @@ def get_usage_history(
     model: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
+    source: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list:
@@ -86,6 +87,9 @@ def get_usage_history(
     if date_to:
         conditions.append("timestamp <= ?")
         params.append(date_to)
+    if source:
+        conditions.append("source = ?")
+        params.append(source)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
     params.extend([limit, offset])

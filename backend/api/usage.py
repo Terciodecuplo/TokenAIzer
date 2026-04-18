@@ -17,11 +17,12 @@ def usage_history(
     model: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
+    source: Optional[str] = None,
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
 ) -> list:
     return get_usage_history(model=model, date_from=date_from, date_to=date_to,
-                              limit=limit, offset=offset)
+                              source=source, limit=limit, offset=offset)
 
 
 @router.post("/manual", status_code=201)
