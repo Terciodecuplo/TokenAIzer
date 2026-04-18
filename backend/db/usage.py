@@ -80,6 +80,81 @@ def get_usage_summary() -> dict:
     return {"models": models, "total": totals}
 
 
+def get_usage_breakdown(
+    model: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+) -> dict:
+    conditions = ["e.model = ?"]
+    params: list = [model]
+    if date_from:
+        conditions.append("e.timestamp >= ?")
+        params.append(date_from)
+    if date_to:
+        conditions.append("e.timestamp <= ?")
+        params.append(date_to)
+
+    where = " AND ".join(conditions)
+
+    with get_connection() as conn:
+        row = conn.execute(
+            f"""
+            SELECT p.input_price_per_million,
+                   p.output_price_per_million,
+                   p.cache_creation_price_per_million,
+                   p.cache_read_price_per_million,
+                   COALESCE(SUM(e.input_tokens), 0)          AS input_tokens,
+                   COALESCE(SUM(e.output_tokens), 0)         AS output_tokens,
+                   COALESCE(SUM(e.thinking_tokens), 0)       AS thinking_tokens,
+                   COALESCE(SUM(e.cache_creation_tokens), 0) AS cache_creation_tokens,
+                   COALESCE(SUM(e.cache_read_tokens), 0)     AS cache_read_tokens
+            FROM model_pricing p
+            LEFT JOIN usage_events e ON e.model = p.model AND {where}
+            WHERE p.model = ?
+            GROUP BY p.model
+            """,
+            params + [model],
+        ).fetchone()
+
+    zero = {
+        "model": model, "period": None,
+        "input_tokens": 0, "output_tokens": 0, "thinking_tokens": 0,
+        "cache_creation_tokens": 0, "cache_read_tokens": 0,
+        "input_cost": 0.0, "output_cost": 0.0, "thinking_cost": 0.0,
+        "cache_creation_cost": 0.0, "cache_read_cost": 0.0, "total_cost": 0.0,
+    }
+    if not row:
+        return zero
+
+    ipm  = row["input_price_per_million"] / 1_000_000
+    opm  = row["output_price_per_million"] / 1_000_000
+    ccpm = row["cache_creation_price_per_million"] / 1_000_000
+    crpm = row["cache_read_price_per_million"] / 1_000_000
+
+    input_cost   = row["input_tokens"]            * ipm
+    output_cost  = row["output_tokens"]           * opm
+    think_cost   = row["thinking_tokens"]         * opm   # thinking billed at output rate
+    cc_cost      = row["cache_creation_tokens"]   * ccpm
+    cr_cost      = row["cache_read_tokens"]       * crpm
+    total_cost   = input_cost + output_cost + think_cost + cc_cost + cr_cost
+
+    return {
+        "model":                  model,
+        "period":                 None,
+        "input_tokens":           row["input_tokens"],
+        "output_tokens":          row["output_tokens"],
+        "thinking_tokens":        row["thinking_tokens"],
+        "cache_creation_tokens":  row["cache_creation_tokens"],
+        "cache_read_tokens":      row["cache_read_tokens"],
+        "input_cost":             round(input_cost, 6),
+        "output_cost":            round(output_cost, 6),
+        "thinking_cost":          round(think_cost, 6),
+        "cache_creation_cost":    round(cc_cost, 6),
+        "cache_read_cost":        round(cr_cost, 6),
+        "total_cost":             round(total_cost, 6),
+    }
+
+
 def get_usage_history(
     model: Optional[str] = None,
     date_from: Optional[str] = None,

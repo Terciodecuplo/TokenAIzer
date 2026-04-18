@@ -345,6 +345,133 @@ header {
   margin-right: 4px;
 }
 
+/* ── breakdown ───────────────────────────────────────────────────────────── */
+.breakdown-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.model-select {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border-subtle);
+  border-radius: var(--radius-btn);
+  color: var(--color-text);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 150ms;
+}
+
+.model-select:focus {
+  border-color: var(--color-accent);
+}
+
+.period-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.period-btn {
+  padding: 5px 10px;
+  border-radius: var(--radius-btn);
+  border: 0.5px solid var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms;
+}
+
+.period-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.period-btn.selected {
+  background: var(--color-accent-glow);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.breakdown-table {
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 4px 0;
+}
+
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 100px 100px 90px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+.breakdown-row:last-of-type {
+  border-bottom: none;
+}
+
+.bd-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.bd-tokens {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.bd-cost {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.bd-bar-track {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bd-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 400ms ease;
+}
+
+.bd-pct {
+  font-size: 11px;
+  color: var(--color-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 10px;
+  border-top: 0.5px solid var(--color-border);
+}
+
+.bd-cost-total {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
 /* ── loading ─────────────────────────────────────────────────────────────── */
 .loading {
   color: var(--color-secondary);

@@ -178,6 +178,57 @@ def test_exchange_rate_returns_null_on_error(client, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# Breakdown
+# ---------------------------------------------------------------------------
+
+def test_breakdown_with_data_returns_aggregated_counts(client):
+    from db.usage import write_usage_event
+    write_usage_event("claude-sonnet-4-6", {
+        "input_tokens": 1000, "output_tokens": 500,
+        "thinking_tokens": 0, "cache_creation_tokens": 200, "cache_read_tokens": 100,
+    }, source="proxy")
+
+    r = client.get("/api/usage/breakdown?model=claude-sonnet-4-6&period=all")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["model"] == "claude-sonnet-4-6"
+    assert body["period"] == "all"
+    assert body["input_tokens"] == 1000
+    assert body["output_tokens"] == 500
+    assert body["cache_creation_tokens"] == 200
+    assert body["cache_read_tokens"] == 100
+    assert body["total_cost"] > 0
+
+
+def test_breakdown_no_data_returns_zeros(client):
+    r = client.get("/api/usage/breakdown?model=claude-sonnet-4-6&period=all")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["input_tokens"] == 0
+    assert body["output_tokens"] == 0
+    assert body["total_cost"] == 0.0
+
+
+def test_breakdown_period_today_excludes_old_events(client):
+    from db.usage import write_usage_event
+    from db.database import get_connection
+    # Insert an event with a past timestamp directly
+    with get_connection() as conn:
+        conn.execute(
+            """INSERT INTO usage_events
+               (timestamp, model, input_tokens, output_tokens, thinking_tokens,
+                cache_creation_tokens, cache_read_tokens, source)
+               VALUES ('2020-01-01T00:00:00+00:00', 'claude-sonnet-4-6', 999, 0, 0, 0, 0, 'proxy')"""
+        )
+        conn.commit()
+
+    r = client.get("/api/usage/breakdown?model=claude-sonnet-4-6&period=today")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["input_tokens"] == 0  # old event excluded
+
+
+# ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
 

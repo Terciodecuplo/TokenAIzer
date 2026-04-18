@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
   import { writable } from 'svelte/store';
-  import { fetchSummary, fetchHistory, fetchProxyStatus, startProxy, stopProxy } from './api.js';
+  import { fetchSummary, fetchHistory, fetchProxyStatus, startProxy, stopProxy, fetchBreakdown } from './api.js';
   import { eurRate, fetchEurRate } from './exchangeRate.js';
   import { animateValue } from './animate.js';
   import { Chart, LineElement, PointElement, LineController, CategoryScale, LinearScale, TimeScale, Filler, Tooltip, Legend } from 'chart.js';
@@ -24,6 +24,25 @@
   let dispInput = 0, dispOutput = 0, dispThinking = 0, dispCacheCreate = 0, dispCacheRead = 0;
   let dispCost = 0;
 
+  // ── breakdown state ──────────────────────────────────────────────────────────
+  let breakdownModel = '';
+  let breakdownPeriod = 'all';
+  let breakdown = null;
+
+  const PERIODS = [
+    { key: 'today', label: 'Today' },
+    { key: '7d',    label: 'Last 7 days' },
+    { key: '30d',   label: 'Last 30 days' },
+    { key: 'all',   label: 'All time' },
+  ];
+
+  async function loadBreakdown() {
+    if (!breakdownModel) return;
+    breakdown = await fetchBreakdown(breakdownModel, breakdownPeriod);
+  }
+
+  $: if (breakdownModel || breakdownPeriod) loadBreakdown();
+
   // ── EUR store ────────────────────────────────────────────────────────────────
   let eur = null;
   eurRate.subscribe(v => { eur = v; });
@@ -42,7 +61,9 @@
     history = h ?? [];
     proxyStatus = ps?.status ?? 'stopped';
     animateTotals(summary?.total ?? {});
+    if (!breakdownModel && s?.models?.length) breakdownModel = s.models[0].model;
     if (chart) updateChart(history);
+    await loadBreakdown();
   }
 
   async function loadSummaryAndHistory() {
@@ -52,6 +73,7 @@
     history = h ?? [];
     animateTotals(summary?.total ?? {}, prevTotal);
     if (chart) updateChart(history);
+    await loadBreakdown();
   }
 
   // ── count-up animation ────────────────────────────────────────────────────────
@@ -204,6 +226,22 @@
     if (chart) { chart.destroy(); chart = null; }
   });
 
+  // ── breakdown rows ────────────────────────────────────────────────────────────
+  let breakdownTotal = 0;
+  let breakdownRows = [];
+  $: if (breakdown) {
+    breakdownTotal = (breakdown.input_tokens ?? 0) + (breakdown.output_tokens ?? 0)
+      + (breakdown.thinking_tokens ?? 0) + (breakdown.cache_creation_tokens ?? 0)
+      + (breakdown.cache_read_tokens ?? 0);
+    breakdownRows = [
+      { key: 'input',          label: 'Input',       tokens: breakdown.input_tokens,          cost: breakdown.input_cost,          color: '#5e6ad2' },
+      { key: 'output',         label: 'Output',      tokens: breakdown.output_tokens,         cost: breakdown.output_cost,         color: '#4caf7d' },
+      { key: 'thinking',       label: 'Thinking',    tokens: breakdown.thinking_tokens,       cost: breakdown.thinking_cost,       color: '#e5a03a', hide: breakdown.thinking_tokens === 0 },
+      { key: 'cache_creation', label: 'Cache write', tokens: breakdown.cache_creation_tokens, cost: breakdown.cache_creation_cost, color: '#888888' },
+      { key: 'cache_read',     label: 'Cache read',  tokens: breakdown.cache_read_tokens,     cost: breakdown.cache_read_cost,     color: '#555555' },
+    ];
+  }
+
   // ── formatting ────────────────────────────────────────────────────────────────
   function fmt(n) { return Math.round(n).toLocaleString(); }
   function fmtCost(n) { return n == null ? '—' : `$${n.toFixed(4)}`; }
@@ -327,6 +365,48 @@
         <span class="legend-dot" style="background:#5e6ad2"></span><span>Input</span>
         <span class="legend-dot" style="background:#4caf7d"></span><span>Output</span>
       </div>
+    </section>
+    <!-- Token breakdown -->
+    <section class="section">
+      <h2 class="section-title">Token breakdown</h2>
+      <div class="breakdown-controls">
+        <select class="model-select" bind:value={breakdownModel}>
+          {#each (summary?.models ?? []) as m}
+            <option value={m.model}>{m.model}</option>
+          {/each}
+        </select>
+        <div class="period-btns">
+          {#each PERIODS as p}
+            <button
+              class="period-btn"
+              class:selected={breakdownPeriod === p.key}
+              on:click={() => breakdownPeriod = p.key}
+            >{p.label}</button>
+          {/each}
+        </div>
+      </div>
+
+      {#if breakdown}
+        <div class="breakdown-table">
+          {#each breakdownRows as row}
+            {#if !row.hide}
+              <div class="breakdown-row">
+                <span class="bd-label">{row.label}</span>
+                <span class="bd-tokens">{(row.tokens ?? 0).toLocaleString()}</span>
+                <span class="bd-cost">{fmtCost(row.cost)}</span>
+                <div class="bd-bar-track">
+                  <div class="bd-bar-fill" style="width:{breakdownTotal > 0 ? ((row.tokens / breakdownTotal) * 100).toFixed(1) : 0}%; background:{row.color}"></div>
+                </div>
+                <span class="bd-pct">{breakdownTotal > 0 ? ((row.tokens / breakdownTotal) * 100).toFixed(1) : '0.0'}%</span>
+              </div>
+            {/if}
+          {/each}
+          <div class="breakdown-total">
+            <span class="bd-label">Total cost</span>
+            <span class="bd-cost-total">{fmtCost(breakdown.total_cost)}</span>
+          </div>
+        </div>
+      {/if}
     </section>
   {/if}
 </main>

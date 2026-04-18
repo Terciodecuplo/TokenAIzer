@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.breakdown import router as breakdown_router
 from api.exchange_rate import router as exchange_rate_router
 from api.pricing import router as pricing_router
 from api.proxy import router as proxy_router
@@ -18,6 +19,7 @@ app.add_middleware(
 
 init_db()
 
+app.include_router(breakdown_router)
 app.include_router(exchange_rate_router)
 app.include_router(proxy_router)
 app.include_router(usage_router)

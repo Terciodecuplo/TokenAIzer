@@ -24,3 +24,8 @@ export async function stopProxy() {
   const r = await fetch(`${BASE}/proxy/stop`, { method: 'POST' });
   return r.json();
 }
+
+export async function fetchBreakdown(model, period = 'all') {
+  const r = await fetch(`${BASE}/usage/breakdown?model=${encodeURIComponent(model)}&period=${period}`);
+  return r.json();
+}
