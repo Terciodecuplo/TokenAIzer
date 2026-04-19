@@ -29,7 +29,7 @@ TokenAIzer consists of two independent processes that share a local SQLite datab
 ```
 [Claude Code / Agents]
         │
-        │  ANTHROPIC_BASE_URL=localhost:8080
+        │  ANTHROPIC_BASE_URL=localhost:8090
         ▼
 [Proxy — Python]  ──────────────────────►  [SQLite]
         │                                      ▲
@@ -77,7 +77,7 @@ npm install
 npm run dev
 ```
 
-Set `ANTHROPIC_BASE_URL=http://localhost:8080` in any Anthropic client to route traffic through the proxy.
+Set `ANTHROPIC_BASE_URL=http://localhost:8090` in any Anthropic client to route traffic through the proxy.
 
 ## Development
 

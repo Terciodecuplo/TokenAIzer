@@ -1,6 +1,6 @@
 """
 mitmproxy inline script for TokenAIzer.
-Run via mitmdump: mitmdump --mode reverse:https://api.anthropic.com -p 8080 -s interceptor.py
+Run via mitmdump: mitmdump --mode reverse:https://api.anthropic.com -p 8090 -s interceptor.py
 """
 import json
 import logging

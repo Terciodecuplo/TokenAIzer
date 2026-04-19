@@ -16,7 +16,7 @@ The system SHALL display the estimated cost in both USD and EUR,
 converted using a daily exchange rate.
 
 ### Requirement: EUR exchange rate display
-The dashboard SHALL fetch the USD→EUR exchange rate from `/api/exchange-rate` (the backend proxy) instead of calling `https://api.frankfurter.app` directly. All other behavior (showing EUR equivalent when rate is available, showing "EUR rate unavailable" when `null`) remains unchanged.
+The dashboard SHALL fetch the USD→EUR exchange rate from `/api/exchange-rate` (the backend proxy) instead of calling open.er-api.com directly. All other behavior (showing EUR equivalent when rate is available, showing "EUR rate unavailable" when `null`) remains unchanged.
 
 #### Scenario: Rate available via backend proxy
 - **WHEN** `GET /api/exchange-rate` returns `{ "eur": <float> }`
@@ -77,3 +77,11 @@ The dashboard SHALL include a "Token breakdown" section below the chart. The sec
 #### Scenario: Breakdown section reflects live data
 - **WHEN** the auto-refresh cycle fires while the breakdown section is visible
 - **THEN** the breakdown values update for the currently selected model and period
+
+### Requirement: Dashboard scaffold
+The system SHALL provide a Svelte + Vite project in the `dashboard/` directory that can be started with `npm run dev` and serves the dashboard at `localhost:5173`.
+
+#### Scenario: Dev server starts
+- **WHEN** the user runs `npm run dev` in `dashboard/`
+- **THEN** the dashboard is accessible at `http://localhost:5173`
+- **AND** it connects to the backend at `http://localhost:8000`

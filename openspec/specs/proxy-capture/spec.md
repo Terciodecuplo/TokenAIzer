@@ -9,10 +9,10 @@ from the dashboard.
 ## Requirements
 
 ### Requirement: Request forwarding
-The system SHALL forward all incoming HTTP requests received on `localhost:8080` to `api.anthropic.com`, preserving all headers, the request body, and HTTP method without modification.
+The system SHALL forward all incoming HTTP requests received on `localhost:8090` to `api.anthropic.com`, preserving all headers, the request body, and HTTP method without modification.
 
 #### Scenario: Non-streaming request forwarded
-- **WHEN** a client sends a POST request to `http://localhost:8080/v1/messages` with a non-streaming body
+- **WHEN** a client sends a POST request to `http://localhost:8090/v1/messages` with a non-streaming body
 - **THEN** the proxy forwards the request to `https://api.anthropic.com/v1/messages`
 - **AND** returns the upstream response body and status code to the client unmodified
 
@@ -62,7 +62,7 @@ The system SHALL expose a programmatic lifecycle interface allowing the backend 
 
 #### Scenario: Proxy started
 - **WHEN** the `start()` lifecycle function is called and the proxy is not already running
-- **THEN** the proxy begins listening on `localhost:8080`
+- **THEN** the proxy begins listening on `localhost:8090`
 - **AND** returns a `running` status
 
 #### Scenario: Proxy already running

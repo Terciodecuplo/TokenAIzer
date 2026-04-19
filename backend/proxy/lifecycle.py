@@ -10,7 +10,7 @@ from typing import Optional
 
 _proc: Optional[subprocess.Popen] = None
 
-PROXY_PORT = 8080
+PROXY_PORT = 8090
 _INTERCEPTOR = Path(__file__).parent / "interceptor.py"
 _UPSTREAM = "https://api.anthropic.com"
 

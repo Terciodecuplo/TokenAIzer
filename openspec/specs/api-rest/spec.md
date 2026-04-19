@@ -41,11 +41,11 @@ The system SHALL expose `POST /api/proxy/start` and `POST /api/proxy/stop` to co
 
 #### Scenario: Start proxy successfully
 - **WHEN** `POST /api/proxy/start` is called and the proxy is stopped
-- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8080 }`
+- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8090 }`
 
 #### Scenario: Proxy already running on start
 - **WHEN** `POST /api/proxy/start` is called and the proxy is already running
-- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8080 }`
+- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8090 }`
 - **AND** no second proxy instance is started
 
 #### Scenario: Stop proxy successfully
@@ -57,7 +57,7 @@ The system SHALL expose `GET /api/proxy/status` returning the current proxy stat
 
 #### Scenario: Status when running
 - **WHEN** `GET /api/proxy/status` is called and the proxy is active
-- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8080 }`
+- **THEN** the response is `200 OK` with body `{ "status": "running", "port": 8090 }`
 
 #### Scenario: Status when stopped
 - **WHEN** `GET /api/proxy/status` is called and the proxy is inactive
@@ -72,7 +72,7 @@ The system SHALL allow requests from localhost on any port to support
 local dashboard development.
 
 ### Requirement: GET /api/exchange-rate endpoint
-The REST API SHALL include a `GET /api/exchange-rate` endpoint that returns the current USD→EUR exchange rate proxied from Frankfurter. The response body SHALL conform to `{ "eur": number | null }`.
+The REST API SHALL include a `GET /api/exchange-rate` endpoint that returns the current USD→EUR exchange rate proxied from open.er-api.com (free tier, no API key required, returns JSON with a `rates` object). The response body SHALL conform to `{ "eur": number | null }`.
 
 #### Scenario: Endpoint is reachable
 - **WHEN** a client sends `GET /api/exchange-rate`

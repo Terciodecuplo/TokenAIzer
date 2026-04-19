@@ -13,7 +13,7 @@ with patch("db.database.init_db"):
 
 client = TestClient(app)
 
-_RUNNING = {"status": "running", "port": 8080}
+_RUNNING = {"status": "running", "port": 8090}
 _STOPPED = {"status": "stopped", "port": None}
 
 
@@ -52,7 +52,7 @@ def test_status_after_start():
         client.post("/api/proxy/start")
         r = client.get("/api/proxy/status")
     assert r.json()["status"] == "running"
-    assert r.json()["port"] == 8080
+    assert r.json()["port"] == 8090
 
 
 def test_status_after_stop():
